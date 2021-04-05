@@ -35,17 +35,18 @@ int i = 0;
  
 
 float climb;
-float gpsAlt;
+float Alt,lastAlt;
 int bearingM;
 int bearingG;
 int hours;
 int minutes;
+int timestamp,lastTimestamp; //runtime in 10 th sec
 int gSpeed;
 int temp;
 int latit,longit;
 int latitArr [256];
 int longitArr [256];
-
+ 
 bool haveGyroData = false;
 bool haveGpsData = false;
 void setup()
@@ -77,15 +78,14 @@ while (Serial1.available() > 0) {
       //GPS MESSAGE
 
       climb = Serial1.parseFloat();
-      gpsAlt = Serial1.parseInt();
       bearingM = Serial1.parseInt();
       bearingG = Serial1.parseInt();
       gSpeed = Serial1.parseInt();
       hours = Serial1.parseInt();
       minutes = Serial1.parseInt();
-      temp = Serial1.parseInt();
       latit = Serial1.parseInt();
       longit = Serial1.parseInt();
+      timestamp = Serial1.parseInt();
       
     
 
@@ -100,14 +100,23 @@ while (Serial1.available() > 0) {
   if ( in == '&') {
       //BARO & MAGNETOM MESSAGE
       
-      climb = Serial1.parseFloat();
+      Alt = Serial1.parseFloat();
       bearingM = Serial1.parseInt();
-    
+      temp = Serial1.parseInt();
+      timestamp = Serial1.parseInt();
+
+
+      int interval = timestamp - lastTimestamp;
+      climb = (Alt - lastAlt)*10/interval;
+      lastAlt = Alt;
+      lastTimestamp = timestamp;
+      
       if (Serial1.read() == '!') {
         haveGyroData = true;
-        PrintData();
+        //PrintData();
         //
       } 
+
       
   }
 
@@ -126,10 +135,10 @@ if (haveGpsData){
   pushPos();
   Draw();
 }
+delay(100);
 
 Serial1.print("?");
 Serial.print("?");
-delay(100);
 
 }
 
@@ -173,8 +182,8 @@ void Draw()
 
  String cBearing = String(bearingM);
  
- String gAlti = String (int(gpsAlt));
- String bAlti = String(int(gpsAlt));
+ String gAlti = String (int(Alt));
+ String bAlti = String(int(Alt));
  int climb10 = climb*10;
  float rclimb = climb10 / 10;
  String sclimb = String(climb);
@@ -274,7 +283,8 @@ void pushClimb(){
 
     for (int i = 60; i >= 0; i--) {
       if (i == 0) {
-        climbs[i] = (climb + climbs[1])/2;
+        //climbs[i] = (climb + climbs[1])/2;
+        climbs[i] = climb;
       } else {
         climbs[i] = climbs[i - 1];
       }
@@ -326,7 +336,7 @@ void PrintData(){
    Serial.print ("climb = ");
    Serial.println (climb);  
    Serial.print ("alt = ");
-   Serial.println (gpsAlt);  
+   Serial.println (Alt);  
    Serial.print ("bearingM = ");
    Serial.println (bearingM);  
    Serial.print ("bearingG = ");
@@ -338,7 +348,9 @@ void PrintData(){
    Serial.print ("lat = ");
    Serial.println (latit); 
    Serial.print ("ong = ");
-   Serial.println (longit); 
+   Serial.println (longit);
+   Serial.print ("time = ");
+   Serial.println (timestamp);  
    
      
  

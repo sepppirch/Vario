@@ -202,11 +202,11 @@ void loop()
  
         if (gpsNewFix)
         {
-        sentence = "$"+ String(climb) + " " + String(int(Alt))+ " " + String(CompassBearing) + " " + String(int(gpsBearing)) + " " + String(int(gpsSpeed)) + " " + String(gpsHour) + " " + String(gpsMin) + " " + String(int(temp)) + " " + String(int(latit))+ " " + String(int(longit)) + "!";
+        sentence = "$" + String(Alt) + " " + String(CompassBearing) + " " + String(int(gpsBearing)) + " " + String(int(gpsSpeed)) + " " + String(gpsHour) + " " + String(gpsMin)  + " " + String(int(latit))+ " " + String(int(longit))+ " " + String(int(currentMillis/100)) + "!";
         }
         else
         {
-        sentence = "&"+ String(climb) + " " + String(CompassBearing)  + "!";
+        sentence = "&" + String(Alt) + " " + String(CompassBearing) + " " + String(int(temp)) + " " + String(int(currentMillis/100)) + "!";
         }
          //String sentece = "$"+ String(climb) + " " + String(int(Alt))+ " " + String(CompassBearing) + " " + String(i % 360) + " " + String(int(gps.speed.kmph())) + " " + String(gps.time.hour()) + " " + String(gps.time.minute()) + " " + String(int(temp)) +"!";
         Serial.println(sentence);
