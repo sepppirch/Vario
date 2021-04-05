@@ -91,18 +91,18 @@ while (Serial1.available() > 0) {
  if ( in == '$') {
       
       //GPS MESSAGE
-      /*
+      
       thisGps.Alt = Serial1.parseFloat();
       bearingM = Serial1.parseInt();
-      bearingG = Serial1.parseInt();
-      gSpeed = Serial1.parseInt();
+      thisGps.Bearing = Serial1.parseInt();
+      thisGps.Speed = Serial1.parseInt();
       hours = Serial1.parseInt();
       minutes = Serial1.parseInt();
-      latit = Serial1.parseInt();
-      longit = Serial1.parseInt();
-      timestamp = Serial1.parseInt();
+      thisGps.latit = Serial1.parseInt();
+      thisGps.longit = Serial1.parseInt();
+      thisGps.TimeStamp = Serial1.parseInt();
 
-      */
+     
       Alt = Serial1.parseFloat();
       bearingM = Serial1.parseInt();
       bearingG = Serial1.parseInt();
@@ -181,8 +181,8 @@ void Draw()
  float dist2 = 60;
  float rad = (270 - bearingM) * PI / 180;
  // gps bearing
- float diff =  bearingM - bearingG;
- float brad = (bearingG - 90 - bearingM) * PI / 180;
+ float diff =  bearingM - thisGps.Bearing;
+ float brad = (thisGps.Bearing - 90 - bearingM) * PI / 180;
   
  float p1xpos = dist * cos(rad)+ 99;
  float p1ypos = dist * sin(rad)+ 99;
@@ -208,7 +208,7 @@ void Draw()
 
  String cBearing = String(bearingM);
  
- String gAlti = String (int(Alt));
+ String gAlti = String (int(thisGps.Alt));
  String bAlti = String(int(Alt));
  int climb10 = climb*10;
  float rclimb = climb10 / 10;
@@ -264,18 +264,18 @@ void Draw()
     u8g2Fonts.print(climb, 1);
     
     // courB24_tf  font_inr24_mf maniac_tf freedoomr25_mn profont17_tf
-    if (gSpeed < 9){
+    if (thisGps.Speed < 9){
     u8g2Fonts.setCursor(150, 200);
     }else{u8g2Fonts.setCursor(140, 200);} 
     u8g2Fonts.setFont(u8g2_font_profont12_tf);
     u8g2Fonts.print("km/h "); 
     u8g2Fonts.setFont(u8g2_font_profont29_tf);
-    u8g2Fonts.print(gSpeed);
+    u8g2Fonts.print(thisGps.Speed);
     u8g2Fonts.setFont(u8g2_font_profont17_tf);
 
 
     u8g2Fonts.setCursor(90, 110);  
-    u8g2Fonts.print(bearingG);
+    u8g2Fonts.print(thisGps.Bearing);
     u8g2Fonts.print("°");
     u8g2Fonts.setCursor(0, 200);  
     u8g2Fonts.print("7.4");
@@ -322,8 +322,8 @@ void pushPos(){
 
     for (int i = 250; i >= 0; i--) {
       if (i == 0) {
-        latitArr[i] = latit;
-        longitArr[i] = longit;
+        latitArr[i] = thisGps.latit;
+        longitArr[i] = thisGps.longit;
       } else {
         latitArr[i] = latitArr[i - 1];
         longitArr[i] = longitArr[i -1];
@@ -339,7 +339,7 @@ void drawRoute(){
 
   for (int i = 0; i < 250; i++){
     //u8g2.drawLine(ybase, i * 2, ybase - int(climbs[i] * multi), i * 2);
-    display.drawLine( (latitArr[i] - latit + 100),(longitArr[i] - longit + 100),  (latitArr[i + 1] - latit + 100), (longitArr[i +1] - longit + 100), GxEPD_BLACK);
+    display.drawLine( (latitArr[i] - thisGps.latit + 100),(longitArr[i] - thisGps.longit + 100),  (latitArr[i + 1] - thisGps.latit + 100), (longitArr[i +1] - thisGps.longit + 100), GxEPD_BLACK);
   }
 
 }
@@ -366,15 +366,15 @@ void PrintData(){
    Serial.print ("bearingM = ");
    Serial.println (bearingM);  
    Serial.print ("bearingG = ");
-   Serial.println (bearingG);  
+   Serial.println (thisGps.Bearing);  
    String tTime = String(hours) + ":" + String(minutes);
    Serial.println (tTime);
    Serial.print ("speed = ");
-   Serial.println (gSpeed); 
+   Serial.println (thisGps.Speed); 
    Serial.print ("lat = ");
-   Serial.println (latit); 
+   Serial.println (thisGps.latit); 
    Serial.print ("ong = ");
-   Serial.println (longit);
+   Serial.println (thisGps.longit);
    Serial.print ("time = ");
    Serial.println (timestamp);  
    
