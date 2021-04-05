@@ -24,7 +24,7 @@ U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
 
 
 
-float multi = 40;
+float multi = 20; //climb bars length
 float climbs [64];
 
 
@@ -49,6 +49,21 @@ int longitArr [256];
  
 bool haveGyroData = false;
 bool haveGpsData = false;
+
+struct gpsFix
+{
+   float Alt;
+   int Bearing;
+   int Speed;
+   int TimeStamp;
+   int latit,longit;
+};
+
+typedef struct gpsFix GpsFix;
+
+GpsFix thisGps, lastGps;
+
+
 void setup()
 {
 
@@ -76,8 +91,19 @@ while (Serial1.available() > 0) {
  if ( in == '$') {
       
       //GPS MESSAGE
+      /*
+      thisGps.Alt = Serial1.parseFloat();
+      bearingM = Serial1.parseInt();
+      bearingG = Serial1.parseInt();
+      gSpeed = Serial1.parseInt();
+      hours = Serial1.parseInt();
+      minutes = Serial1.parseInt();
+      latit = Serial1.parseInt();
+      longit = Serial1.parseInt();
+      timestamp = Serial1.parseInt();
 
-      climb = Serial1.parseFloat();
+      */
+      Alt = Serial1.parseFloat();
       bearingM = Serial1.parseInt();
       bearingG = Serial1.parseInt();
       gSpeed = Serial1.parseInt();
@@ -104,19 +130,19 @@ while (Serial1.available() > 0) {
       bearingM = Serial1.parseInt();
       temp = Serial1.parseInt();
       timestamp = Serial1.parseInt();
-
-
-      int interval = timestamp - lastTimestamp;
-      climb = (Alt - lastAlt)*10/interval;
-      lastAlt = Alt;
-      lastTimestamp = timestamp;
       
       if (Serial1.read() == '!') {
         haveGyroData = true;
-        //PrintData();
-        //
+        
+        int interval = timestamp - lastTimestamp;  // 100th sec
+        climb = (Alt - lastAlt)*100/interval;  // m/sec
+        lastAlt = Alt;
+        lastTimestamp = timestamp;
+  
+        Serial.print("lastBaro: ");
+        Serial.println(interval);
       } 
-
+      
       
   }
 
