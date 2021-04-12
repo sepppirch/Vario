@@ -18,24 +18,23 @@
 // uncomment next line to use class GFX of library GFX_Root instead of Adafruit_GFX
 #include <Arduino.h>
 #include "wiring_private.h"
- 
+
+// Serial port to talk to other Arduino
 Uart mySerial (&sercom0, 5, 6, SERCOM_RX_PAD_1, UART_TX_PAD_0);
- 
 // Attach the interrupt handler to the SERCOM
 void SERCOM0_Handler()
 {
 mySerial.IrqHandler();
 }
-int i = 0;
 
+
+int i = 0;
 float climb = -1.5;
- 
 int bearingM = 125;
 int bearingG = 133;
 int hours = 12;
 int minutes = 55;
 int gSpeed = 39;
-
 
 const byte speakerPin=14;
 unsigned long lastPeriodStart;
@@ -46,11 +45,12 @@ int sink = 0;
 float offZ = 0.5;
 
 QMC5883LCompass compass;
-// need to add tilt compensation!!!
+//about tilt compensation
 // have a look at this: https://www.best-microcontroller-projects.com/magnetometer-tilt-compensation.html
 // https://blog.arduino.cc/2019/05/15/this-compass-reads-the-correct-heading-even-when-tilted/
 //https://www.instructables.com/Quaternion-Compass/
 //https://duino4projects.com/tilt-compensated-compass/
+
 int calibrationData[3][2];
 bool changed = false;
 bool compassCalibDone = true;
@@ -59,9 +59,6 @@ int c = 0;
 int CompassBearing,lastCompassBearing;
 float MagDeclination = 4.5;
 uint32_t total_seconds = 0;
-
-//String gSpeed = "NOGPS";
-//String gBearing = "NOGPS";
 float roll, pitch, heading;
 Madgwick filter;
 const float sensorRate = 104.00;
@@ -70,9 +67,8 @@ int GPSBaud = 9600;
 BlueDot_BME280 bme1;                                     //Object for Sensor 1
 int lastSecond = 0;                               
 int bme1Detected = 0;  
-int temp = 0;
+int temperatur = 0;
 float lastAlt, Alt;
-//float climb;
 float multi = 20;
 float climbs [64];
 float gForce = 1;
@@ -188,7 +184,7 @@ void loop()
         i++;
         i = i % 360;
         Alt = bme1.readAltitudeMeter();
-        temp = bme1.readTempC();
+        temperatur = bme1.readTempC();
         //Serial.println(gForce);
         climb = (Alt - lastAlt)*1000/interval;
         lastAlt = Alt;
@@ -205,9 +201,9 @@ void loop()
         }
         else
         {
-        sentence = "&" + String(Alt) + " " + String(CompassBearing) + " " + String(int(temp)) + " " + String(int(currentMillis/10)) + "!";
+        sentence = "&" + String(Alt) + " " + String(CompassBearing) + " " + String(int(temperatur)) + " " + String(int(currentMillis/10)) + "!";
         }
-         //String sentece = "$"+ String(climb) + " " + String(int(Alt))+ " " + String(CompassBearing) + " " + String(i % 360) + " " + String(int(gps.speed.kmph())) + " " + String(gps.time.hour()) + " " + String(gps.time.minute()) + " " + String(int(temp)) +"!";
+         //String sentece = "$"+ String(climb) + " " + String(int(Alt))+ " " + String(CompassBearing) + " " + String(i % 360) + " " + String(int(gps.speed.kmph())) + " " + String(gps.time.hour()) + " " + String(gps.time.minute()) + " " + String(int(temperatur)) +"!";
         Serial.println(sentence);
         
         
