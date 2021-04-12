@@ -27,7 +27,7 @@ U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
 float multi = 20; //climb bars length
 float climbs [64];
 
-
+float Cx,Cy,Cr;
 
 uint32_t timer = millis();
 int i = 0;
@@ -294,6 +294,13 @@ void Draw()
    display.drawLine(bp1xpos,bp1ypos,99,99, GxEPD_BLACK);
    display.drawLine(bp1xpos,bp1ypos,bp3xpos,bp3ypos, GxEPD_BLACK);
    display.drawLine(bp2xpos,bp2ypos,bp1xpos,bp1ypos, GxEPD_BLACK);
+
+// wind triangle
+   display.drawTriangle(20, 100, 80, 30 , 125, 150, GxEPD_BLACK);
+   findCircle(20, 100, 80, 30 , 125, 150);
+   display.drawCircle(int(Cx), int(Cy), int(Cr),  GxEPD_BLACK);
+   display.drawPixel(int(Cx), int(Cy), GxEPD_BLACK);
+   
    drawBars();
    drawRoute();
    
@@ -408,4 +415,68 @@ void full_black()
     display.fillScreen(GxEPD_BLACK);
   }
   while (display.nextPage());
+}
+
+
+
+
+
+
+
+
+
+
+/// circle from 3 points >> https://www.geeksforgeeks.org/equation-of-circle-when-three-points-on-the-circle-are-given/
+
+void findCircle(float x1, float y1, float x2, float y2, float x3, float y3)
+{
+    float x12 = x1 - x2;
+    float x13 = x1 - x3;
+  
+    float y12 = y1 - y2;
+    float y13 = y1 - y3;
+  
+    float y31 = y3 - y1;
+    float y21 = y2 - y1;
+  
+    float x31 = x3 - x1;
+    float x21 = x2 - x1;
+  
+    // x1^2 - x3^2
+    float sx13 = pow(x1, 2) - pow(x3, 2);
+  
+    // y1^2 - y3^2
+    float sy13 = pow(y1, 2) - pow(y3, 2);
+  
+    float sx21 = pow(x2, 2) - pow(x1, 2);
+    float sy21 = pow(y2, 2) - pow(y1, 2);
+  
+    float f = ((sx13) * (x12)
+             + (sy13) * (x12)
+             + (sx21) * (x13)
+             + (sy21) * (x13))
+            / (2 * ((y31) * (x12) - (y21) * (x13)));
+    float g = ((sx13) * (y12)
+             + (sy13) * (y12)
+             + (sx21) * (y13)
+             + (sy21) * (y13))
+            / (2 * ((x31) * (y12) - (x21) * (y13)));
+  
+    float c = -pow(x1, 2) - pow(y1, 2) - 2 * g * x1 - 2 * f * y1;
+  
+    // eqn of circle be x^2 + y^2 + 2*g*x + 2*f*y + c = 0
+    // where centre is (h = -g, k = -f) and radius r
+    // as r^2 = h^2 + k^2 - c
+    float h = -g;
+    float k = -f;
+    float sqr_of_r = h * h + k * k - c;
+  
+    // r is the radius
+    float r = sqrt(sqr_of_r);
+
+    Cx = h;
+    Cy = k;
+    Cr = r;
+   // cout << "Centre = (" << h << ", " << k << ")" << endl;
+   // cout << "Radius = " << r;
 }
