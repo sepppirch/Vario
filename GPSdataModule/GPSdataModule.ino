@@ -11,7 +11,6 @@
 #include <Arduino_LSM6DS3.h>
 #include <MadgwickAHRS.h>
 #include <Math.h>
-//#include <BME280I2C.h> //from BME280 by Tyler Glenn
 #include <TinyGPS++.h>
 #define GPSSerial Serial1
 #include "BlueDot_BME280.h" 
