@@ -42,7 +42,7 @@ int hours;
 int minutes;
 int timestamp,lastTimestamp; //runtime in 10 th sec
 int gSpeed;
-int temp;
+int temperature;
 int latit,longit;
 int latitArr [256];
 int longitArr [256];
@@ -128,7 +128,7 @@ while (Serial1.available() > 0) {
       
       Alt = Serial1.parseFloat();
       bearingM = Serial1.parseInt();
-      temp = Serial1.parseInt();
+      temperature = Serial1.parseInt();
       timestamp = Serial1.parseInt();
       
       if (Serial1.read() == '!') {
@@ -243,7 +243,7 @@ void Draw()
      u8g2Fonts.print("m");
     u8g2Fonts.setFont(u8g2_font_profont17_tf);
     u8g2Fonts.setCursor(0, 26);  
-    u8g2Fonts.print(temp);
+    u8g2Fonts.print(temperature);
     u8g2Fonts.print("°");
     u8g2Fonts.setCursor(90, 26);
     u8g2Fonts.print(cBearing + "°");
