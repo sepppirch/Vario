@@ -103,13 +103,13 @@ delay(1000);
 
 
   /// create random points
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < 25; i++)
   {
-  int b = random(0,359);
-  int s = random(40,80);
+  int b = random(0,360);
+  int s = random(50,80);
 
   double x = cos(b * DEG2RAD)* s + 120;
-  double y = sin(b * DEG2RAD)* s + 80;
+  double y = sin(b * DEG2RAD)* s + 100;
 
   addPoint(x,y);
   }
@@ -525,8 +525,8 @@ void findCircle(float x1, float y1, float x2, float y2, float x3, float y3)
 int CircleFit(int N, Point2 * P, double *pa, double *pb, double *pr)
 {
   /* user-selected parameters */
-  const int maxIterations = 32;
-  const double tolerance = 1e-05;
+  const int maxIterations = 128;
+  const double tolerance = 1e-06;
 
   double a, b, r;
 
@@ -588,15 +588,15 @@ int CircleFit(int N, Point2 * P, double *pa, double *pb, double *pr)
   *pb = b;
   *pr = r;
 
- Serial.print("iter " + String(j));
+ Serial.println("x " + String(a) + " y " + String(b) + " iter " + String(j) );
  display.drawCircle(a, b, r,  GxEPD_BLACK);
   return (j < maxIterations ? j : -1);
 }
-
+/*
 enum {
 M_SHOW_CIRCLE, M_CIRCLE_INFO, M_RESET_POINTS, M_QUIT
 };
-
+*/
 void
 addPoint(double x, double y)
 {
@@ -619,6 +619,7 @@ void calcFitCircle()
     int rc;
 
     rc = CircleFit(num, list, &a, &b, &r);
+ /* 
     Serial.print(num);
     if (rc == -1) {
       Serial.print("circlefit: Problem fitting points to a circle encountered.\n");
@@ -631,7 +632,7 @@ void calcFitCircle()
     }
     circleFitNeedsRecalc = 0;
  // }
-  
+  */
   for (i = 0; i < num; i++) {
     display.drawCircle(int(list[i].x), int(list[i].y),3, GxEPD_BLACK);
   }
