@@ -32,7 +32,7 @@ float Cx,Cy,Cr;
 uint32_t timer = millis();
 int i = 0;
 
- 
+const float DEG2RAD = PI / 180.0f;
 
 float climb;
 float Alt,lastAlt;
@@ -78,6 +78,16 @@ void setup()
   // cleanup
 
 delay(1000);
+
+
+  /// create random points
+  for (int i = 0; i < 20; i++)
+  {
+  int b = random(0,359);
+
+  float x = cos(b * DEG2RAD);
+  float y = sin(b * DEG2RAD);
+  }
 }
 
 void loop()
