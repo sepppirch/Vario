@@ -7,6 +7,14 @@
 #include <GxEPD2_7C.h>
 #include "Open_Sans_ExtraBold_120.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+/* Some <math.h> files do not define M_PI... */
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include <U8g2_for_Adafruit_GFX.h>
 //#include <U8g2lib.h>
@@ -16,9 +24,23 @@
 
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(/*CS=D8*/ 7, /*DC=D3*/ 6, /*RST=D4*/ 10, /*BUSY=D2*/ 8)); // GDEH0154D67
 
-
+typedef struct {
+  double x, y;
+} Point2;
 uint16_t bg = GxEPD_WHITE;
 uint16_t fg = GxEPD_BLACK;
+
+
+#define MAX_POINTS 100
+
+int num = 0;
+Point2 list[MAX_POINTS];
+int circleFitNeedsRecalc = 0;
+
+int circleInfo = 0;
+
+double a, b, r = 0.0;   /* X, Y, and radius of best fit circle.      */
+
 
 U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
 
@@ -81,12 +103,15 @@ delay(1000);
 
 
   /// create random points
-  for (int i = 0; i < 20; i++)
+  for (int i = 0; i < 10; i++)
   {
   int b = random(0,359);
+  int s = random(40,80);
 
-  float x = cos(b * DEG2RAD);
-  float y = sin(b * DEG2RAD);
+  double x = cos(b * DEG2RAD)* s + 120;
+  double y = sin(b * DEG2RAD)* s + 80;
+
+  addPoint(x,y);
   }
 }
 
@@ -160,7 +185,7 @@ while (Serial1.available() > 0) {
 
 if (haveGyroData){
   haveGyroData = false;
-  PrintData();
+  //PrintData();
   pushClimb();
   Draw();
 
@@ -305,11 +330,14 @@ void Draw()
    display.drawLine(bp1xpos,bp1ypos,bp3xpos,bp3ypos, GxEPD_BLACK);
    display.drawLine(bp2xpos,bp2ypos,bp1xpos,bp1ypos, GxEPD_BLACK);
 
-// wind triangle
+/*/ wind triangle
    display.drawTriangle(20, 100, 80, 30 , 125, 150, GxEPD_BLACK);
    findCircle(20, 100, 80, 30 , 125, 150);
    display.drawCircle(int(Cx), int(Cy), int(Cr),  GxEPD_BLACK);
-   display.drawPixel(int(Cx), int(Cy), GxEPD_BLACK);
+*/
+   calcFitCircle();
+ 
+   
    
    drawBars();
    drawRoute();
@@ -490,3 +518,123 @@ void findCircle(float x1, float y1, float x2, float y2, float x3, float y3)
    // cout << "Centre = (" << h << ", " << k << ")" << endl;
    // cout << "Radius = " << r;
 }
+
+
+
+
+int CircleFit(int N, Point2 * P, double *pa, double *pb, double *pr)
+{
+  /* user-selected parameters */
+  const int maxIterations = 32;
+  const double tolerance = 1e-05;
+
+  double a, b, r;
+
+  /* compute the average of the data points */
+  int i, j;
+  double xAvr = 0.0;
+  double yAvr = 0.0;
+
+  
+
+  for (i = 0; i < N; i++) {
+    xAvr += P[i].x;
+    yAvr += P[i].y;
+  }
+  xAvr /= N;
+  yAvr /= N;
+
+  /* initial guess */
+  a = xAvr;
+  b = yAvr;
+
+
+
+  for (j = 0; j < maxIterations; j++) {
+    /* update the iterates */
+    double a0 = a;
+    double b0 = b;
+
+    /* compute average L, dL/da, dL/db */
+    double LAvr = 0.0;
+    double LaAvr = 0.0;
+    double LbAvr = 0.0;
+
+    for (i = 0; i < N; i++) {
+      double dx = P[i].x - a;
+      double dy = P[i].y - b;
+      double L = sqrt(dx * dx + dy * dy);
+      if (fabs(L) > tolerance) {
+        LAvr += L;
+        LaAvr -= dx / L;
+        LbAvr -= dy / L;
+      }
+    }
+    LAvr /= N;
+    LaAvr /= N;
+    LbAvr /= N;
+
+    a = xAvr + LAvr * LaAvr;
+    b = yAvr + LAvr * LbAvr;
+    r = LAvr;
+
+
+
+    if (fabs(a - a0) <= tolerance && fabs(b - b0) <= tolerance)
+      break;
+  }
+
+  *pa = a;
+  *pb = b;
+  *pr = r;
+
+ Serial.print("iter " + String(j));
+ display.drawCircle(a, b, r,  GxEPD_BLACK);
+  return (j < maxIterations ? j : -1);
+}
+
+enum {
+M_SHOW_CIRCLE, M_CIRCLE_INFO, M_RESET_POINTS, M_QUIT
+};
+
+void
+addPoint(double x, double y)
+{
+  if (num + 1 >= MAX_POINTS) {
+    Serial.print("too many points");
+    return;
+  }
+  list[num].x = x;
+  list[num].y = y;
+  num++;
+  circleFitNeedsRecalc = 1;
+   
+}
+
+void calcFitCircle()
+{
+  int i;
+
+  //if (circleFitNeedsRecalc) {
+    int rc;
+
+    rc = CircleFit(num, list, &a, &b, &r);
+    Serial.print(num);
+    if (rc == -1) {
+      Serial.print("circlefit: Problem fitting points to a circle encountered.\n");
+    } else {
+      if (circleInfo) {
+         Serial.print("fittingCricle: " + String(r)+ " " + String(a)+ " " + String(b));
+        
+        
+      }
+    }
+    circleFitNeedsRecalc = 0;
+ // }
+  
+  for (i = 0; i < num; i++) {
+    display.drawCircle(int(list[i].x), int(list[i].y),3, GxEPD_BLACK);
+  }
+  
+}
+                     
