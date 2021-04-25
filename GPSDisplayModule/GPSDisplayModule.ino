@@ -104,13 +104,24 @@ delay(1000);
 
 
   /// create random points
-  for (int i = 0; i < 25; i++)
+  for (int i = 0; i < 3; i++)
   {
-  int b = random(0,160);
-  int s = random(30,60);
+  int b = random(0,360);
+  int s = random(35,45);
 
-  double x = cos(b * DEG2RAD)* s + 0;
-  double y = sin(b * DEG2RAD)* s + 30;
+  double x = cos(b * DEG2RAD)* s + 10;
+  double y = sin(b * DEG2RAD)* s + 10;
+
+  addPoint(x,y);
+  }
+
+  for (int i = 0; i < 30; i++)
+  {
+  int b = random(0,120);
+  int s = random(35,45);
+
+  double x = cos(b * DEG2RAD)* s + 10;
+  double y = sin(b * DEG2RAD)* s + 10;
 
   addPoint(x,y);
   }
@@ -549,7 +560,7 @@ int CircleFit(int N, Point2 * P, double *pa, double *pb, double *pr)
   a = xAvr;
   b = yAvr;
 
-
+ 
 
   for (j = 0; j < maxIterations; j++) {
     /* update the iterates */
@@ -580,7 +591,7 @@ int CircleFit(int N, Point2 * P, double *pa, double *pb, double *pr)
     r = LAvr;
 
 
-
+ 
     if (fabs(a - a0) <= tolerance && fabs(b - b0) <= tolerance)
       break;
   }
@@ -595,7 +606,7 @@ int CircleFit(int N, Point2 * P, double *pa, double *pb, double *pr)
  int wdir = (int(atan2(b, a) * 180 / PI) + 360) % 360;
   
  int wspeed = sqrt(pow(a,2) + pow(b,2));
- Serial.println(String(wdir) + " " + String(wspeed));
+ Serial.println(String(wdir) + " " + String(wspeed) + " " + String(r));
   return (j < maxIterations ? j : -1);
 }
 /*
