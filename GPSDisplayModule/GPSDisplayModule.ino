@@ -27,6 +27,7 @@ GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(/*CS=D8
 typedef struct {
   double x, y;
 } Point2;
+
 uint16_t bg = GxEPD_WHITE;
 uint16_t fg = GxEPD_BLACK;
 
@@ -105,11 +106,11 @@ delay(1000);
   /// create random points
   for (int i = 0; i < 25; i++)
   {
-  int b = random(0,360);
-  int s = random(50,80);
+  int b = random(0,160);
+  int s = random(30,60);
 
-  double x = cos(b * DEG2RAD)* s + 120;
-  double y = sin(b * DEG2RAD)* s + 100;
+  double x = cos(b * DEG2RAD)* s + 0;
+  double y = sin(b * DEG2RAD)* s + 30;
 
   addPoint(x,y);
   }
@@ -588,8 +589,13 @@ int CircleFit(int N, Point2 * P, double *pa, double *pb, double *pr)
   *pb = b;
   *pr = r;
 
- Serial.println("x " + String(a) + " y " + String(b) + " iter " + String(j) );
- display.drawCircle(a, b, r,  GxEPD_BLACK);
+
+ display.drawCircle(b + 100, a * -1 + 100, r,  GxEPD_BLACK);
+
+ int wdir = (int(atan2(b, a) * 180 / PI) + 360) % 360;
+  
+ int wspeed = sqrt(pow(a,2) + pow(b,2));
+ Serial.println(String(wdir) + " " + String(wspeed));
   return (j < maxIterations ? j : -1);
 }
 /*
@@ -607,7 +613,7 @@ addPoint(double x, double y)
   list[num].x = x;
   list[num].y = y;
   num++;
-  circleFitNeedsRecalc = 1;
+  //circleFitNeedsRecalc = 1;
    
 }
 
@@ -634,7 +640,7 @@ void calcFitCircle()
  // }
   */
   for (i = 0; i < num; i++) {
-    display.drawCircle(int(list[i].x), int(list[i].y),3, GxEPD_BLACK);
+    display.drawCircle(int(list[i].y) + 100, int(list[i].x * -1) + 100,3, GxEPD_BLACK);
   }
   
 }
