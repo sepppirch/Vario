@@ -124,9 +124,9 @@ delay(1000);
   }
 
 
-  int rc;
+ 
 
-  rc = CircleFit(num, list, &a, &b, &r);
+ CircleFit(num, list, &a, &b, &r);
   
 }
 
@@ -268,9 +268,7 @@ void collectWindData(){
   list[i + 4].y = y;
   }
 
-  int rc;
-
-  rc = CircleFit(num, list, &a, &b, &r);
+  CircleFit(num, list, &a, &b, &r);
           
 }
 
@@ -593,7 +591,7 @@ void findCircle(float x1, float y1, float x2, float y2, float x3, float y3)
 
 
 
-int CircleFit(int N, Point2 * P, double *pa, double *pb, double *pr)
+void CircleFit(int N, Point2 * P, double *pa, double *pb, double *pr)
 {
   /* user-selected parameters */
   const int maxIterations = 128;
@@ -666,7 +664,7 @@ int CircleFit(int N, Point2 * P, double *pa, double *pb, double *pr)
   
  int wspeed = sqrt(pow(a,2) + pow(b,2));
  Serial.println(String(wdir) + " " + String(wspeed) + " " + String(r));
-  return (j < maxIterations ? j : -1);
+ 
 }
 /*
 enum {
