@@ -99,16 +99,11 @@ void setup()
 
   Serial1.begin(115200);
   Serial.begin(115200);
-//  Serial.println();
   Serial.println("setup");
   Serial1.println("?");
   delay(100);
   display.init(115200);
   u8g2Fonts.begin(display); // connect u8g2 procedures to Adafruit GFX
-  // cleanup
-
-delay(1000);
-
 
   /// create random points
   for (int i = 0; i < 24; i++)
@@ -123,11 +118,8 @@ delay(1000);
   list[i].y = y;
   }
 
-
- 
-
- CircleFit(num, list, &a, &b, &r);
-  
+  CircleFit(num, list, &a, &b, &r);
+  delay(1000);
 }
 
 void loop()
