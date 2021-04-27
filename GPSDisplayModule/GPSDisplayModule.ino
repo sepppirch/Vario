@@ -24,18 +24,25 @@
 
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(/*CS=D8*/ 7, /*DC=D3*/ 6, /*RST=D4*/ 10, /*BUSY=D2*/ 8)); // GDEH0154D67
 
+uint16_t bg = GxEPD_WHITE;
+uint16_t fg = GxEPD_BLACK;
+
+///wind calculation 
 typedef struct {
   double x, y;
 } Point2;
 
-uint16_t bg = GxEPD_WHITE;
-uint16_t fg = GxEPD_BLACK;
-
+typedef struct {
+ int Dir, Speed;  
+} Dirspeed;
 
 #define MAX_POINTS 100
 
-int num = 0;
+int num = 24; 
 Point2 list[MAX_POINTS];
+Dirspeed cardinalPoints [4];
+Dirspeed gpsPoints [20];
+
 int circleFitNeedsRecalc = 0;
 
 int circleInfo = 0;
@@ -104,7 +111,7 @@ delay(1000);
 
 
   /// create random points
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 24; i++)
   {
   int b = random(0,360);
   int s = random(35,45);
@@ -112,19 +119,15 @@ delay(1000);
   double x = cos(b * DEG2RAD)* s + 10;
   double y = sin(b * DEG2RAD)* s + 10;
 
-  addPoint(x,y);
+  list[i].x = x;
+  list[i].y = y;
   }
 
-  for (int i = 0; i < 30; i++)
-  {
-  int b = random(0,120);
-  int s = random(35,45);
 
-  double x = cos(b * DEG2RAD)* s + 10;
-  double y = sin(b * DEG2RAD)* s + 10;
+  int rc;
 
-  addPoint(x,y);
-  }
+  rc = CircleFit(num, list, &a, &b, &r);
+  
 }
 
 void loop()
@@ -149,7 +152,7 @@ while (Serial1.available() > 0) {
       thisGps.longit = Serial1.parseInt();
       thisGps.TimeStamp = Serial1.parseInt();
 
-     
+     /*
       Alt = Serial1.parseFloat();
       bearingM = Serial1.parseInt();
       bearingG = Serial1.parseInt();
@@ -160,14 +163,14 @@ while (Serial1.available() > 0) {
       longit = Serial1.parseInt();
       timestamp = Serial1.parseInt();
       
-    
+      */
 
     
-        if (Serial1.read() == '!') {
+      if (Serial1.read() == '!') {
         haveGpsData = true;
         //PrintData();
-        //
-        } 
+ 
+      } 
         
   }
   if ( in == '&') {
@@ -205,6 +208,7 @@ if (haveGyroData){
 
 if (haveGpsData){
   haveGpsData = false;
+  collectWindData();
   pushPos();
   Draw();
 }
@@ -215,7 +219,60 @@ Serial.print("?");
 
 }
 
+void collectWindData(){
+  
+    // put actual gps into cardinalPoints array
+     if (thisGps.Bearing < 90 && thisGps.Bearing > -1){
+          cardinalPoints[0].Dir = thisGps.Bearing;
+          cardinalPoints[0].Speed = thisGps.Speed;} 
+     else if (thisGps.Bearing < 180 && thisGps.Bearing > 90){
+          cardinalPoints[1].Dir = thisGps.Bearing;
+          cardinalPoints[1].Speed = thisGps.Speed;}
+     else if (thisGps.Bearing < 270 && thisGps.Bearing > 180){
+          cardinalPoints[2].Dir = thisGps.Bearing;
+          cardinalPoints[2].Speed = thisGps.Speed;}
+     else if (thisGps.Bearing > 270){
+          cardinalPoints[3].Dir = thisGps.Bearing;
+          cardinalPoints[3].Speed = thisGps.Speed;}
+    
+    for (int i = 19; i >= 0; i--) {
+      if (i == 0) {
+        gpsPoints[i].Dir = thisGps.Bearing;
+        gpsPoints[i].Speed = thisGps.Speed;
+      } else {
+        gpsPoints[i] = gpsPoints[i - 1];
+      }
+    }
 
+  for (int i = 0; i < 3; i++)
+  {
+  int b = cardinalPoints[i].Dir;
+  int s = cardinalPoints[i].Speed;
+
+  double x = cos(b * DEG2RAD)* s;
+  double y = sin(b * DEG2RAD)* s;
+
+  list[i].x = x;
+  list[i].y = y;
+  }
+
+  for (int i = 1; i < 20; i++)
+  {
+  int b = gpsPoints[i].Dir;
+  int s = gpsPoints[i].Speed;
+
+  double x = cos(b * DEG2RAD)* s;
+  double y = sin(b * DEG2RAD)* s;
+
+  list[i + 4].x = x;
+  list[i + 4].y = y;
+  }
+
+  int rc;
+
+  rc = CircleFit(num, list, &a, &b, &r);
+          
+}
 
 
 void Draw()
@@ -347,9 +404,11 @@ void Draw()
    findCircle(20, 100, 80, 30 , 125, 150);
    display.drawCircle(int(Cx), int(Cy), int(Cr),  GxEPD_BLACK);
 */
-   calcFitCircle();
- 
-   
+  // draw Wind radar plot
+  display.drawCircle(b + 100, a * -1 + 100, r,  GxEPD_BLACK);
+  for (i = 0; i < num; i++) {
+  display.drawCircle(int(list[i].y) + 100, int(list[i].x * -1) + 100,3, GxEPD_BLACK);
+  }
    
    drawBars();
    drawRoute();
@@ -601,7 +660,7 @@ int CircleFit(int N, Point2 * P, double *pa, double *pb, double *pr)
   *pr = r;
 
 
- display.drawCircle(b + 100, a * -1 + 100, r,  GxEPD_BLACK);
+
 
  int wdir = (int(atan2(b, a) * 180 / PI) + 360) % 360;
   
@@ -614,8 +673,18 @@ enum {
 M_SHOW_CIRCLE, M_CIRCLE_INFO, M_RESET_POINTS, M_QUIT
 };
 */
-void
-addPoint(double x, double y)
+
+
+
+
+
+
+
+
+
+
+
+void addPoint(double x, double y)
 {
   if (num + 1 >= MAX_POINTS) {
     Serial.print("too many points");
@@ -628,31 +697,4 @@ addPoint(double x, double y)
    
 }
 
-void calcFitCircle()
-{
-  int i;
-
-  //if (circleFitNeedsRecalc) {
-    int rc;
-
-    rc = CircleFit(num, list, &a, &b, &r);
- /* 
-    Serial.print(num);
-    if (rc == -1) {
-      Serial.print("circlefit: Problem fitting points to a circle encountered.\n");
-    } else {
-      if (circleInfo) {
-         Serial.print("fittingCricle: " + String(r)+ " " + String(a)+ " " + String(b));
-        
-        
-      }
-    }
-    circleFitNeedsRecalc = 0;
- // }
-  */
-  for (i = 0; i < num; i++) {
-    display.drawCircle(int(list[i].y) + 100, int(list[i].x * -1) + 100,3, GxEPD_BLACK);
-  }
-  
-}
                      
