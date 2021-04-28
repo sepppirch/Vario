@@ -81,7 +81,7 @@ int gpsHour, gpsMin,gpsAlt;
 
 int latit = 4822144;
 int longit = 1637766;
-int gpsLastAge = 0;
+int gpsLastAge = 99999;
 bool gpsNewFix = false;
 
 String gpsTime = "xxx";
@@ -179,7 +179,7 @@ void loop()
         interval = currentMillis - previousMillis;
         previousMillis = currentMillis;
         //Serial.println(interval);
-        Serial.println(button2Count);
+        //Serial.println(button2Count);
 
         i++;
         i = i % 360;
@@ -188,13 +188,13 @@ void loop()
         //Serial.println(gForce);
         climb = (Alt - lastAlt)*1000/interval;
         lastAlt = Alt;
-
+        displayGPSInfo(false);
         
         //latit = latit + cos(float(CompassBearing) * DEG2RAD) * 6;
         //longit = longit + sin(float(CompassBearing) * DEG2RAD) * 6;
 
         String sentence;
- 
+       // Serial.println(gpsNewFix);
         if (gpsNewFix)
         {
         sentence = "$" + String(Alt) + " " + String(CompassBearing) + " " + String(int(gpsBearing)) + " " + String(int(gpsSpeed)) + " " + String(gpsHour) + " " + String(gpsMin)  + " " + String(int(latit))+ " " + String(int(longit))+ " " + String(int(currentMillis/10)) + "!";
@@ -210,7 +210,7 @@ void loop()
         //String sentece = "$0.45 2001 " + String(i) + " 213 14 57 36!";
         mySerial.println(sentence);
 
-        displayGPSInfo(true);
+        
         
 
      }
@@ -456,7 +456,7 @@ void displayGPSInfo(bool logging)
     int thisAge = gps.location.age();
     
     if (thisAge < gpsLastAge)
-    {
+      {
       
       double tempLat = gps.location.lat();
       latit = tempLat * 100000;
@@ -465,12 +465,15 @@ void displayGPSInfo(bool logging)
       gpsAlt = gps.altitude.meters();
       gpsSpeed = gps.speed.kmph();
       gpsBearing = gps.course.deg();
-      gpsLastAge = thisAge;
+      
       gpsNewFix = true;
       
-    }else{gpsNewFix = false;}
+      }else{
+      gpsNewFix = false;
+      
+      }
      
-
+    gpsLastAge = thisAge;
 
 
     if(logging){
@@ -496,14 +499,19 @@ void displayGPSInfo(bool logging)
   }
   else
   {
+    if(logging){
     Serial.println("Location: Not Available");
+    }
   }
   
-  Serial.print("Date: ");
+  
+ 
+  
   if (gps.date.isValid())
   {
 
     if(logging){
+      Serial.print("Date: ");
       Serial.print(gps.date.month());
       Serial.print("/");
       Serial.print(gps.date.day());
@@ -513,10 +521,12 @@ void displayGPSInfo(bool logging)
   }
   else
   {
+    if(logging){
     Serial.println("Not Available");
+    }
   }
 
-  Serial.print("Time: ");
+  
   if (gps.time.isValid() )
   { 
 
@@ -525,12 +535,15 @@ void displayGPSInfo(bool logging)
     
     gpsTime = String(gpsHour) + ":" + String(gpsMin) + ":" + String(gps.time.second());
     if(logging){
+      Serial.print("Time: ");
       Serial.println(gpsTime);
     }
   }
   else
   {
+    if(logging){
     Serial.println("Not Available");
+    }
   }
  
   //delay(1000);
