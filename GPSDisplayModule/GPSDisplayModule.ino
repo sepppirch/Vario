@@ -471,7 +471,7 @@ void full_black()
 
 
 
-
+/*
 
 
 
@@ -532,7 +532,7 @@ void findCircle(float x1, float y1, float x2, float y2, float x3, float y3)
 }
 
 
-
+*/
 
 int CircleFit(int N, Point2 * P, double *pa, double *pb, double *pr)
 {
