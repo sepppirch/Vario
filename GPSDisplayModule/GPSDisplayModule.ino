@@ -227,7 +227,7 @@ void collectWindData(){
           cardinalPoints[3].Dir = thisGps.Bearing;
           cardinalPoints[3].Speed = thisGps.Speed;}
     
-    for (int i = 19; i >= 0; i--) {
+    for (int i = 20; i >= 0; i--) {
       if (i == 0) {
         gpsPoints[i].Dir = thisGps.Bearing;
         gpsPoints[i].Speed = thisGps.Speed;
@@ -236,7 +236,7 @@ void collectWindData(){
       }
     }
 
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 4; i++)
   {
   int b = cardinalPoints[i].Dir;
   int s = cardinalPoints[i].Speed;
@@ -248,7 +248,7 @@ void collectWindData(){
   list[i].y = y;
   }
 
-  for (int i = 1; i < 20; i++)
+  for (int i = 0; i < 20; i++)
   {
   int b = gpsPoints[i].Dir;
   int s = gpsPoints[i].Speed;
@@ -396,8 +396,11 @@ void Draw()
 */
   // draw Wind radar plot
   display.drawCircle(b + 100, a * -1 + 100, r,  GxEPD_BLACK);
+  u8g2Fonts.setFont(u8g2_font_profont12_tf);
   for (i = 0; i < num; i++) {
-  display.drawCircle(int(list[i].y) + 100, int(list[i].x * -1) + 100,3, GxEPD_BLACK);
+  //display.drawCircle(int(list[i].y) + 100, int(list[i].x * -1) + 100,3, GxEPD_BLACK);
+    u8g2Fonts.setCursor(int(list[i].y) + 100, int(list[i].x * -1) + 100);  
+    u8g2Fonts.print(i);
   }
    
    drawBars();
